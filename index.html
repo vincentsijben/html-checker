@@ -1,0 +1,2585 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <title>Twitter Meta Tag Checker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    :root {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f172a;
+      color: #e5e7eb; 
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 1100px;
+      background: #020617;
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7);
+      border: 1px solid #1f2937;
+    }
+
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .version-badge {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+      border: 1px solid #1f2937;
+      background: #020617;
+      align-self: flex-start;
+      white-space: nowrap;
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 1.6rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+
+    h1 span.logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      border: 2px solid #38bdf8;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #0f172a;
+      background: linear-gradient(135deg, #38bdf8, #6366f1);
+      box-shadow: 0 0 20px rgba(56,189,248,0.6);
+    }
+
+    p.lead {
+      margin-top: .25rem;
+      color: #9ca3af;
+      font-size: 0.95rem;
+    }
+
+    form {
+      margin-top: 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    label {
+      font-size: 0.9rem;
+      color: #9ca3af;
+      width: 100%;
+    }
+
+    input[type="url"],
+    input[type="password"],
+    textarea {
+      flex: 1 1 260px;
+      padding: 0.7rem 0.9rem;
+      border-radius: 0.75rem;
+      border: 1px solid #374151;
+      background: #020617;
+      color: #e5e7eb;
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    input[type="url"]::placeholder,
+    textarea::placeholder {
+      color: #6b7280;
+    }
+
+    input[type="url"]:focus,
+    input[type="password"]:focus,
+    textarea:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 1px #38bdf8;
+    }
+
+    button {
+      padding: 0.7rem 1.3rem;
+      border-radius: 0.75rem;
+      border: none;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: linear-gradient(135deg, #38bdf8, #6366f1);
+      color: #0f172a;
+      box-shadow: 0 20px 30px -15px rgba(56,189,248,0.7);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: wait;
+      box-shadow: none;
+    }
+
+    .hint {
+      margin-top: 0.25rem;
+      font-size: 0.8rem;
+      color: #6b7280;
+    }
+
+    .results {
+      margin-top: 1.75rem;
+      border-top: 1px solid #111827;
+      padding-top: 1.25rem;
+    }
+
+    .status-summary {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+      flex-wrap: wrap;
+    }
+
+    .status-badge {
+      padding: 0.1rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border: 1px solid transparent;
+    }
+
+    .status-badge.ok {
+      background: rgba(22,163,74,0.18);
+      border-color: rgba(22,163,74,0.7);
+      color: #bbf7d0;
+    }
+
+    .status-badge.mixed {
+      background: rgba(234,179,8,0.16);
+      border-color: rgba(202,138,4,0.9);
+      color: #facc15;
+    }
+
+    .status-badge.error {
+      background: rgba(239,68,68,0.15);
+      border-color: rgba(248,113,113,0.9);
+      color: #fecaca;
+    }
+
+    .checks {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.75rem;
+    }
+
+    @media (min-width: 720px) {
+      .checks {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    .check-card {
+      background: #020617;
+      border-radius: 0.9rem;
+      padding: 0.8rem 0.9rem;
+      border: 1px solid #111827;
+      display: flex;
+      gap: 0.6rem;
+    }
+
+    .check-icon {
+      font-size: 1.3rem;
+      flex-shrink: 0;
+      margin-top: 0.2rem;
+    }
+
+    .check-content {
+      font-size: 0.9rem;
+    }
+
+    .check-title {
+      font-weight: 600;
+      margin-bottom: 0.1rem;
+    }
+
+    .check-tag {
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.8rem;
+      color: #9ca3af;
+      margin-bottom: 0.1rem;
+    }
+
+    .check-message {
+      color: #d1d5db;
+      font-size: 0.85rem;
+    }
+
+    .current-values {
+      margin-top: 0.3rem;
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+
+    .current-values code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      background: #020617;
+      border-radius: 0.35rem;
+      padding: 0.05rem 0.35rem;
+      border: 1px solid #111827;
+      display: inline-block;
+      max-width: 100%;
+      word-break: break-all;
+    }
+
+    .error-text {
+      color: #fecaca;
+      font-size: 0.85rem;
+    }
+
+    .loading {
+      margin-top: 0.8rem;
+      font-size: 0.85rem;
+      color: #9ca3af;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border-radius: 999px;
+      border: 2px solid #1f2937;
+      border-top-color: #38bdf8;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .small-note {
+      margin-top: 1.5rem;
+      font-size: 0.8rem;
+      color: #6b7280;
+    }
+
+    a {
+      color: #38bdf8;
+    }
+
+    /* Social card preview */
+    .preview-section {
+      margin-top: 1.75rem;
+      border-top: 1px dashed #111827;
+      padding-top: 1.25rem;
+    }
+
+    .preview-label {
+      font-size: 0.9rem;
+      color: #9ca3af;
+      margin-bottom: 0.5rem;
+    }
+
+    .preview-card {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      background: #020617;
+      border-radius: 0.9rem;
+      border: 1px solid #111827;
+      overflow: hidden;
+    }
+
+    .preview-image-wrapper {
+      flex: 0 0 180px;
+      max-width: 200px;
+      background: #020617;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .preview-image {
+      width: 100%;
+      height: 100%;
+      max-height: 210px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .preview-image-placeholder {
+      font-size: 0.8rem;
+      color: #6b7280;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .preview-body {
+      flex: 1 1 220px;
+      padding: 0.8rem 0.9rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .preview-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #e5e7eb;
+    }
+
+    .preview-meta {
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+
+    .preview-meta span + span::before {
+      content: " • ";
+      margin: 0 0.15rem;
+    }
+
+    .preview-url {
+      font-size: 0.8rem;
+      color: #93c5fd;
+      margin-top: 0.35rem;
+      word-break: break-all;
+    }
+
+    .preview-url span {
+      opacity: 0.8;
+      margin-right: 0.35rem;
+    }
+
+    /* Structuur-overzicht */
+    .structure-section {
+      margin-top: 1.75rem;
+      border-top: 1px dashed #111827;
+      padding-top: 1.25rem;
+    }
+
+    .structure-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+    }
+
+    .structure-grid {
+      display: grid;
+      grid-template-columns: minmax(0,1fr);
+      gap: 0.75rem;
+    }
+
+    @media (min-width: 780px) {
+      .structure-grid {
+        grid-template-columns: repeat(2, minmax(0,1fr));
+      }
+    }
+
+    @media (min-width: 1040px) {
+      .structure-grid {
+        grid-template-columns: repeat(4, minmax(0,1fr));
+      }
+    }
+
+    .structure-card {
+      background: #020617;
+      border-radius: 0.9rem;
+      border: 1px solid #111827;
+      overflow: hidden;
+      font-size: 0.8rem;
+    }
+
+    .structure-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #111827;
+      padding: 0.35rem 0.6rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #f9fafb;
+    }
+
+    .structure-card-title {
+      text-decoration: underline;
+    }
+
+    .structure-card-meta {
+      color: #9ca3af;
+      font-weight: 500;
+    }
+
+    .structure-card-body {
+      padding: 0.45rem 0.6rem 0.55rem;
+    }
+
+    .structure-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .structure-table th,
+    .structure-table td {
+      padding: 0.12rem 0.25rem;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    .structure-table th {
+      border-bottom: 1px solid #111827;
+      font-weight: 600;
+      font-size: 0.78rem;
+      color: #9ca3af;
+    }
+
+    .structure-table td {
+      font-size: 0.78rem;
+      color: #e5e7eb;
+      border-bottom: 1px solid #020617;
+    }
+
+    .structure-table th:nth-child(2),
+    .structure-table td:nth-child(2) {
+      text-align: right;
+    }
+
+    .structure-note {
+      margin-top: 0.25rem;
+      font-size: 0.75rem;
+      color: #6b7280;
+    }
+
+    .structure-table td.indent {
+      padding-left: 0.9rem;
+      font-size: 0.76rem;
+    }
+
+    .image-table td.filename-cell {
+      max-width: 170px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-align: left;
+    }
+
+    .table-section-header {
+      margin-top: 0.4rem;
+      background: #111827;
+      color: #f9fafb;
+      padding: 0.25rem 0.5rem;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+    }
+
+    .table-section-header span:last-child {
+      font-weight: 700;
+    }
+
+    .table-section-divider {
+      height: 2px;
+      background: #000;
+      margin: 0 0 0.25rem;
+    }
+
+    /* Tooltip support for headers */
+    .table-section-header.has-tooltip {
+      position: relative;
+    }
+    .table-section-header.has-tooltip::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 8px;
+      max-width: 320px;
+      background: #0b1221;
+      color: #fef2f2;
+      border: 1px solid #f59e0b;
+      border-radius: 0.5rem;
+      padding: 0.45rem 0.6rem;
+      font-size: 0.75rem;
+      line-height: 1.35;
+      box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.7);
+      opacity: 0;
+      transform: translateY(-4px);
+      pointer-events: none;
+      transition: opacity 80ms ease-out, transform 80ms ease-out;
+      z-index: 10;
+    }
+    .table-section-header.has-tooltip:hover {
+      cursor: help;
+    }
+    .table-section-header.has-tooltip:hover::after {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .table-section-header.semantic-warning-soft {
+      background: rgba(245, 158, 11, 0.12);
+      border-left: 2px solid #f59e0b;
+    }
+    .table-section-header.semantic-warning {
+      background: rgba(239, 68, 68, 0.12);
+      border-left: 2px solid #ef4444;
+    }
+
+    .css-height-line {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      margin-top: 0.05rem;
+      text-align: right;
+    }
+
+    /* Highlight rows where important semantic tags are missing */
+    .structure-table tr.semantic-warning td,
+    .structure-table tr.missing-nav td {
+      background: rgba(239, 68, 68, 0.22);
+      color: #fecaca;
+      border-left: 0;
+      border-right: 0;
+    }
+    .structure-table tr.semantic-warning-soft td {
+      background: rgba(245, 158, 11, 0.18);
+      color: #fef3c7;
+      border-left: 0;
+      border-right: 0;
+    }
+    .structure-table tr.semantic-warning td:first-child,
+    .structure-table tr.missing-nav td:first-child {
+      border-left: 3px solid #ef4444;
+      border-right: 0;
+    }
+    .structure-table tr.semantic-warning-soft td:first-child {
+      border-left: 3px solid #f59e0b;
+      border-right: 0;
+    }
+    .structure-table tr.semantic-warning td:last-child,
+    .structure-table tr.missing-nav td:last-child {
+      border-right: 3px solid #ef4444;
+    }
+    .structure-table tr.semantic-warning-soft td:last-child {
+      border-right: 3px solid #f59e0b;
+    }
+    .structure-table tr.semantic-warning:hover td,
+    .structure-table tr.missing-nav:hover td {
+      background: rgba(239, 68, 68, 0.32);
+    }
+    .structure-table tr.semantic-warning-soft:hover td {
+      background: rgba(245, 158, 11, 0.28);
+    }
+    .structure-table tr.has-tooltip {
+      position: relative;
+    }
+    .structure-table tr.has-tooltip::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 8px;
+      max-width: 320px;
+      background: #0b1221;
+      color: #fef2f2;
+      border: 1px solid #ef4444;
+      border-radius: 0.5rem;
+      padding: 0.45rem 0.6rem;
+      font-size: 0.75rem;
+      line-height: 1.35;
+      box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.7);
+      opacity: 0;
+      transform: translateY(-4px);
+      pointer-events: none;
+      transition: opacity 80ms ease-out, transform 80ms ease-out;
+      z-index: 10;
+    }
+    .structure-table tr.has-tooltip:hover td {
+      cursor: help;
+    }
+    .structure-table tr.has-tooltip:hover::after {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <div class="app-header">
+      <div>
+        <h1>
+          <span class="logo">TW</span>
+          Twitter Meta Tag Checker
+        </h1>
+        <p class="lead">
+          Plak de URL van je <strong>homepage</strong> (GitHub Pages <code>final-…</code>) en check of je Twitter meta tags voldoen aan de opdracht.
+        </p>
+      </div>
+      <div class="version-badge">v3.0</div>
+    </div>
+
+    <!-- Student: single URL -->
+    <form id="check-form">
+      <label for="url">
+        Homepage URL (<code>final-jouwhandle</code>)
+      </label>
+      <input
+        type="url"
+        id="url"
+        name="url"
+        required
+        placeholder="">
+      <button type="submit">
+        <span>Check meta tags</span>
+      </button>
+      <div class="hint">
+        Tip: gebruik dezelfde homepage-URL die je ook in <code>twitter:site</code> gebruikt.
+      </div>
+    </form>
+
+    <div id="loading" class="loading" style="display:none;">
+      <div class="spinner"></div>
+      <span>Pagina wordt opgehaald en geanalyseerd…</span>
+    </div>
+
+    <section class="results" id="results" style="display:none;">
+      <div id="summary" class="status-summary"></div>
+      <div id="checks" class="checks"></div>
+    </section>
+
+    <!-- Social card preview -->
+    <section id="preview-section" class="preview-section" style="display:none;">
+      <div class="preview-label">
+        Zo zou je pagina eruit kunnen zien als social media card:
+      </div>
+      <div class="preview-card">
+        <div class="preview-image-wrapper">
+          <img id="preview-image" class="preview-image" src="" alt="Artikel thumbnail" style="display:none;">
+          <div id="preview-image-placeholder" class="preview-image-placeholder" style="display:none;">
+            Geen geldige thumbnail gevonden.
+          </div>
+        </div>
+        <div class="preview-body">
+          <div id="preview-title" class="preview-title">Voorbeeld titel van je artikel</div>
+          <div id="preview-meta" class="preview-meta"></div>
+          <div id="preview-url" class="preview-url">
+            <span>Link</span>
+            <span id="preview-url-text">https://example.com/artikel.html</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Structuur-overzicht -->
+    <section id="structure-section" class="structure-section" style="display:none;">
+      <div class="structure-title">Structuur van deze pagina</div>
+      <div class="structure-grid">
+        <!-- Kolom 1: CSS -->
+        <article class="structure-card">
+          <div class="structure-card-header">
+            <div id="css-card-title" class="structure-card-title">css (detectie)</div>
+            <div class="structure-card-meta">usage</div>
+          </div>
+          <div class="structure-card-body">
+            <table class="structure-table" id="css-usage-table">
+              <thead>
+                <tr><th>property</th><th>usage</th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+            <div class="structure-note" id="css-usage-note"></div>
+
+            <div id="css-heights-header" class="table-section-header" style="margin-top:0.6rem;"></div>
+            <table class="structure-table" id="css-heights-table">
+              <tbody></tbody>
+            </table>
+
+            <div id="css-negative-header" class="table-section-header" style="margin-top:0.6rem;"></div>
+            <table class="structure-table" id="css-negative-table">
+              <tbody></tbody>
+            </table>
+          </div>
+        </article>
+
+        <!-- Kolom 2: homepage -->
+        <article class="structure-card">
+          <div class="structure-card-header">
+            <div id="homepage-card-title" class="structure-card-title">index.html</div>
+            <div class="structure-card-meta">usage</div>
+          </div>
+          <div class="structure-card-body">
+            <table class="structure-table" id="tags-table">
+              <tbody></tbody>
+            </table>
+
+            <div id="tags-total-header" class="table-section-header"></div>
+            <div class="table-section-divider"></div>
+
+            <div id="classes-total-header" class="table-section-header"></div>
+            <table class="structure-table" id="classes-table">
+              <thead></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </article>
+
+        <!-- Kolom 3: artikelpagina -->
+        <article class="structure-card">
+          <div class="structure-card-header">
+            <div id="article-card-title" class="structure-card-title">artikel.html</div>
+            <div class="structure-card-meta">usage</div>
+          </div>
+          <div class="structure-card-body">
+            <table class="structure-table" id="article-tags-table">
+              <tbody></tbody>
+            </table>
+            <div id="article-tags-total-header" class="table-section-header"></div>
+            <div class="table-section-divider"></div>
+            <div id="article-classes-total-header" class="table-section-header"></div>
+            <table class="structure-table" id="article-classes-table">
+              <thead></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </article>
+
+        <!-- Kolom 4: afbeeldingen -->
+        <article class="structure-card">
+          <div class="structure-card-header">
+            <div id="image-card-title" class="structure-card-title">images</div>
+            <div class="structure-card-meta">size</div>
+          </div>
+          <div class="structure-card-body">
+            <table class="structure-table image-table">
+              <tbody id="images-table-body"></tbody>
+            </table>
+            <div id="images-total-header" class="table-section-header" style="margin-top:0.6rem;"></div>
+            <div class="structure-note" id="images-note"></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    const allowedCategories = [
+      "Ontwerpen en daklozen",
+      "AI in het ontwerpproces",
+      "Ontwerpen voor dementen mensen en omgeving",
+      "Ontwerpen en het leesproces",
+      "De ontwerper in social design",
+      "Wild Card"
+    ];
+
+    function getMetaContent(doc, name) {
+      const el = doc.querySelector(`meta[name="${name}"]`);
+      return el ? el.getAttribute("content") || "" : null;
+    }
+
+    function isAbsoluteUrl(value) {
+      if (!value) return false;
+      try {
+        const url = new URL(value);
+        return url.protocol === "http:" || url.protocol === "https:";
+      } catch {
+        return false;
+      }
+    }
+
+    function looksLikePlaceholder(value) {
+      if (!value) return false;
+      const v = value.toLowerCase();
+      return v.includes("url homepage") ||
+             v.includes("titel artikel") ||
+             v.includes("url artikel") ||
+             v.includes("categorie artikel") ||
+             v.includes("url thumbnail") ||
+             v.includes("naam");
+    }
+
+    function summarizeStatus(checks) {
+      const hasError = checks.some(c => c.level === "error");
+      const hasWarning = checks.some(c => c.level === "warning");
+      if (hasError && !hasWarning) return { level: "error", text: "Er missen verplichte velden of er zijn duidelijke fouten." };
+      if (!hasError && hasWarning) return { level: "mixed", text: "Alles staat ongeveer goed, maar er zijn een paar verbeterpunten." };
+      if (hasError && hasWarning) return { level: "error", text: "Een deel is goed, maar er zijn ook fouten én verbeterpunten." };
+      return { level: "ok", text: "Alle gecontroleerde meta tags voldoen aan de opdracht 🎉" };
+    }
+
+    function getBaseHandlePrefix() {
+      const origin = location.origin.replace(/\/+$/, "");
+      return origin + "/final-";
+    }
+
+    function validatePageSetupByTitle(pageTitle) {
+      const title = (pageTitle || "").trim();
+      if (!title) {
+        return {
+          tag: "page-setup",
+          title: "GitHub Pages structuur",
+          level: "ok",
+          icon: "✅",
+          message: "",
+          current: "(geen titel)"
+        };
+      }
+
+      if (title.toLowerCase().includes("assignment")) {
+        return {
+          tag: "page-setup",
+          title: "GitHub Pages toont niet het juiste resultaat.",
+          level: "error",
+          icon: "❌",
+          message: "De titel van de pagina bevat \"Assignment\". Waarschijnlijk toont GitHub Pages nu je README in plaats van je echte website.",
+          current: title,
+          suggestion: "Zorg dat er een index.html in de root van je repo staat en dat je niet een extra projectmap met daarin index.html hebt geüpload. De inhoud van die projectmap hoort in de root van de repo."
+        };
+      }
+
+      return {
+        tag: "page-setup",
+        title: "GitHub Pages structuur",
+        level: "ok",
+        icon: "✅",
+        message: "",
+        current: title
+      };
+    }
+
+    function validateTwitterCard(value) {
+      if (!value) {
+        return {
+          tag: "twitter:card",
+          title: "Twitter card type",
+          level: "error",
+          icon: "❌",
+          message: "De waarde voor twitter:card ontbreekt.",
+          suggestion: "Voeg een meta tag toe met content=\"summary_large_image\"."
+        };
+      }
+      if (value.trim() !== "summary_large_image") {
+        return {
+          tag: "twitter:card",
+          title: "Twitter card type",
+          level: "warning",
+          icon: "⚠️",
+          message: `Je twitter:card is "${value}", maar volgens de opdracht moet dit \"summary_large_image\" zijn.`,
+          current: value.trim(),
+          suggestion: "Pas de meta tag aan naar content=\"summary_large_image\"."
+        };
+      }
+      return {
+        tag: "twitter:card",
+        title: "Twitter card type",
+        level: "ok",
+        icon: "✅",
+        message: "twitter:card is correct ingesteld op summary_large_image.",
+        current: value.trim()
+      };
+    }
+
+    async function validateSiteAsync(value, submittedUrl) {
+      const baseHandlePrefix = getBaseHandlePrefix();
+      if (!value) {
+        return {
+          tag: "twitter:site",
+          title: "Homepage URL",
+          level: "error",
+          icon: "❌",
+          message: "De waarde voor twitter:site ontbreekt.",
+          suggestion: `Vul hier je volledige homepage URL in, bijvoorbeeld: ${baseHandlePrefix}jouwhandle/.`
+        };
+      }
+      const trimmed = value.trim();
+      const issues = [];
+
+      if (!isAbsoluteUrl(trimmed)) {
+        issues.push("De URL is niet absoluut (moet met http(s) beginnen).");
+      }
+      if (!trimmed.startsWith(baseHandlePrefix)) {
+        issues.push("Volgens de opdracht moet deze URL beginnen met " + baseHandlePrefix + ".");
+      }
+
+      if (issues.length > 0) {
+        return {
+          tag: "twitter:site",
+          title: "Homepage URL",
+          level: issues.some(i => i.includes("niet absoluut")) ? "error" : "warning",
+          icon: issues.some(i => i.includes("niet absoluut")) ? "❌" : "⚠️",
+          message: issues.join(" "),
+          current: trimmed,
+          suggestion: "Gebruik je volledige GitHub Pages homepage, bijvoorbeeld: " + baseHandlePrefix + "jouwhandle/."
+        };
+      }
+
+      try {
+        const res = await fetch(trimmed, { method: "GET" });
+        if (!res.ok) {
+          return {
+            tag: "twitter:site",
+            title: "Homepage URL",
+            level: "error",
+            icon: "❌",
+            message: `twitter:site verwijst naar een URL die geen geldige pagina oplevert (HTTP-status ${res.status}).`,
+            current: trimmed,
+            suggestion: "Controleer of GitHub Pages is ingesteld op deze repo en of de URL klopt."
+          };
+        }
+      } catch (err) {
+        return {
+          tag: "twitter:site",
+          title: "Homepage URL",
+          level: "error",
+          icon: "❌",
+          message: "De URL in twitter:site kon niet worden geladen. Mogelijk is er een typefout of is GitHub Pages nog niet klaar.",
+          current: trimmed,
+          suggestion: "Controleer de URL en of GitHub Pages al klaar is met deployen."
+        };
+      }
+
+      return {
+        tag: "twitter:site",
+        title: "Homepage URL",
+        level: "ok",
+        icon: "✅",
+        message: "twitter:site verwijst naar een geldige, bereikbare GitHub Pages homepage.",
+        current: trimmed
+      };
+    }
+
+    function validateCreator(value) {
+      if (!value) {
+        return {
+          tag: "twitter:creator",
+          title: "Auteur naam",
+          level: "error",
+          icon: "❌",
+          message: "De waarde voor twitter:creator ontbreekt.",
+          suggestion: "Vul hier je voor- en achternaam in, netjes met hoofdletters."
+        };
+      }
+      const trimmed = value.trim();
+      if (looksLikePlaceholder(trimmed)) {
+        return {
+          tag: "twitter:creator",
+          title: "Auteur naam",
+          level: "error",
+          icon: "❌",
+          message: "De naam lijkt nog steeds op een placeholder en niet op je echte naam.",
+          current: trimmed,
+          suggestion: "Gebruik je echte naam, bijvoorbeeld: \"Jan Jansen\"."
+        };
+      }
+      const words = trimmed.split(/\s+/);
+      const hasSpace = words.length >= 2;
+      if (!hasSpace) {
+        return {
+          tag: "twitter:creator",
+          title: "Auteur naam",
+          level: "warning",
+          icon: "⚠️",
+          message: "Het lijkt geen voor- + achternaam te zijn. De opdracht vraagt om je volledige naam.",
+          current: trimmed,
+          suggestion: "Gebruik zowel je voor- als achternaam, bijvoorbeeld: \"Voornaam Achternaam\"."
+        };
+      }
+      return {
+        tag: "twitter:creator",
+        title: "Auteur naam",
+        level: "ok",
+        icon: "✅",
+        message: "twitter:creator lijkt een nette naam te bevatten.",
+        current: trimmed
+      };
+    }
+
+    function validateTitle(value) {
+      if (!value) {
+        return {
+          tag: "twitter:title",
+          title: "Artikel titel",
+          level: "error",
+          icon: "❌",
+          message: "De waarde voor twitter:title ontbreekt.",
+          suggestion: "Vul hier de titel van je artikel in (meestal gelijk aan je H1)."
+        };
+      }
+      const trimmed = value.trim();
+      if (looksLikePlaceholder(trimmed)) {
+        return {
+          tag: "twitter:title",
+          title: "Artikel titel",
+          level: "error",
+          icon: "❌",
+          message: "De tekst lijkt nog op een placeholder en niet op een echte titel.",
+          current: trimmed,
+          suggestion: "Vervang de tekst door de echte titel van je artikel."
+        };
+      }
+      return {
+        tag: "twitter:title",
+        title: "Artikel titel",
+        level: "ok",
+        icon: "✅",
+        message: "twitter:title is ingevuld.",
+        current: trimmed
+      };
+    }
+
+    function pickHomepageUrl(twitterSite, submittedUrl) {
+      if (isAbsoluteUrl(twitterSite)) return twitterSite;
+      if (isAbsoluteUrl(submittedUrl)) return submittedUrl;
+      return null;
+    }
+
+    function normalizeHomepage(urlStr) {
+      const u = new URL(urlStr);
+      let path = u.pathname;
+      path = path.replace(/index\.html$/i, "").replace(/\/+$/, "");
+      return u.origin + path;
+    }
+
+    function normalizeArticle(urlStr) {
+      const u = new URL(urlStr);
+      let path = u.pathname;
+      path = path.replace(/\/+$/, "");
+      return u.origin + path;
+    }
+
+    async function validateArticleUrl(value, submittedUrl, twitterSite) {
+      if (!value) {
+        return {
+          tag: "twitter:article:url",
+          title: "Artikel URL",
+          level: "error",
+          icon: "❌",
+          message: "De waarde voor twitter:article:url ontbreekt.",
+          suggestion: "Vul hier de volledige URL van je artikelpagina in, bijvoorbeeld: jouwhomepage/artikel.html."
+        };
+      }
+
+      const trimmed = value.trim();
+      if (!isAbsoluteUrl(trimmed)) {
+        return {
+          tag: "twitter:article:url",
+          title: "Artikel URL",
+          level: "error",
+          icon: "❌",
+          message: "De artikel-URL is niet absoluut. Gebruik je volledige artikel-URL inclusief https://.",
+          current: trimmed,
+          suggestion: "Kopieer de URL van je artikelpagina uit je browser en plak die hier."
+        };
+      }
+
+      let parsedArticle;
+      try {
+        parsedArticle = new URL(trimmed);
+      } catch {
+        return {
+          tag: "twitter:article:url",
+          title: "Artikel URL",
+          level: "error",
+          icon: "❌",
+          message: "De ingevulde artikel-URL is geen geldige URL.",
+          current: trimmed,
+          suggestion: "Controleer of er geen typefout in de URL staat."
+        };
+      }
+
+      if (!parsedArticle.pathname.toLowerCase().endsWith(".html")) {
+        return {
+          tag: "twitter:article:url",
+          title: "Artikel URL",
+          level: "warning",
+          icon: "⚠️",
+          message: "De artikel-URL eindigt niet op .html. In de opdracht wordt uitgegaan van een aparte HTML-pagina, bijvoorbeeld artikel.html.",
+          current: trimmed,
+          suggestion: "Gebruik een URL naar een specifieke HTML-pagina, bijvoorbeeld: jouwhomepage/artikel.html."
+        };
+      }
+
+      const homepageUrlStr = pickHomepageUrl(twitterSite, submittedUrl);
+      if (homepageUrlStr) {
+        try {
+          const normHome = normalizeHomepage(homepageUrlStr);
+          const normArticle = normalizeArticle(trimmed);
+
+          if (normArticle === normHome) {
+            return {
+              tag: "twitter:article:url",
+              title: "Artikel URL",
+              level: "error",
+              icon: "❌",
+              message: "De artikel-URL is hetzelfde als je homepage. De opdracht vraagt om een aparte HTML-pagina voor je artikel, bijvoorbeeld artikel.html.",
+              current: trimmed,
+              suggestion: "Maak een aparte HTML-pagina voor je artikel en gebruik de volledige URL naar die pagina."
+            };
+          }
+
+          const home = new URL(homepageUrlStr);
+          const art = parsedArticle;
+
+          if (home.origin !== art.origin) {
+            return {
+              tag: "twitter:article:url",
+              title: "Artikel URL",
+              level: "warning",
+              icon: "⚠️",
+              message: "De artikel-URL staat niet op hetzelfde domein als je homepage. Meestal hoort het artikel in dezelfde GitHub Pages site te staan.",
+              current: trimmed,
+              suggestion: "Zorg dat je artikelpagina in je eigen final-repo staat, bijvoorbeeld: jouwhomepage/artikel.html."
+            };
+          }
+
+          const homeBasePath = home.pathname
+            .replace(/index\.html$/i, "")
+            .replace(/\/+$/, "");
+          if (!art.pathname.startsWith(homeBasePath + "/")) {
+            return {
+              tag: "twitter:article:url",
+              title: "Artikel URL",
+              level: "warning",
+              icon: "⚠️",
+              message: "De artikel-URL lijkt niet in dezelfde mapstructuur te staan als je final-homepage.",
+              current: trimmed,
+              suggestion: "Zet je artikel in dezelfde final-repo en gebruik een URL zoals: jouwhomepage/artikel.html."
+            };
+          }
+
+        } catch {
+          // ignore
+        }
+      }
+
+      try {
+        const res = await fetch(trimmed, { method: "GET" });
+        if (!res.ok) {
+          return {
+            tag: "twitter:article:url",
+            title: "Artikel URL",
+            level: "error",
+            icon: "❌",
+            message: `De artikel-URL geeft geen geldige pagina terug (HTTP-status ${res.status}).`,
+            current: trimmed,
+            suggestion: "Controleer of het bestand bestaat in je repo en of het pad klopt. Probeer de URL eerst zelf in een nieuw tabblad."
+          };
+        }
+      } catch (err) {
+        return {
+          tag: "twitter:article:url",
+          title: "Artikel URL",
+          level: "error",
+          icon: "❌",
+          message: "De artikel-URL kon niet worden geladen. Mogelijk is er een typefout of is de pagina nog niet beschikbaar via GitHub Pages.",
+          current: trimmed,
+          suggestion: "Controleer de URL en of GitHub Pages al klaar is met deployen."
+        };
+      }
+
+      return {
+        tag: "twitter:article:url",
+        title: "Artikel URL",
+        level: "ok",
+        icon: "✅",
+        message: "twitter:article:url verwijst naar een aparte, bestaande HTML-pagina voor je artikel.",
+        current: trimmed
+      };
+    }
+
+    function validateCategory(value) {
+      if (!value) {
+        return {
+          tag: "twitter:category",
+          title: "Categorie",
+          level: "error",
+          icon: "❌",
+          message: "De waarde voor twitter:category ontbreekt.",
+          suggestion: "Kies één van de categorieën uit de opdracht en neem die exact over."
+        };
+      }
+      const trimmed = value.trim();
+      if (!allowedCategories.includes(trimmed)) {
+        const listHtml = `
+          Gebruik precies één van deze categorieën:
+          <ul>
+            <li>Ontwerpen en daklozen</li>
+            <li>AI in het ontwerpproces</li>
+            <li>Ontwerpen voor dementen mensen en omgeving</li>
+            <li>Ontwerpen en het leesproces</li>
+            <li>De ontwerper in social design</li>
+            <li>Wild Card</li>
+          </ul>
+        `;
+        return {
+          tag: "twitter:category",
+          title: "Categorie",
+          level: "error",
+          icon: "❌",
+          message: "De categorie komt niet overeen met één van de toegestane opties.",
+          current: trimmed,
+          suggestion: listHtml
+        };
+      }
+      return {
+        tag: "twitter:category",
+        title: "Categorie",
+        level: "ok",
+        icon: "✅",
+        message: "twitter:category is een geldige, toegestane categorie.",
+        current: trimmed
+      };
+    }
+
+    function validateImage(value) {
+      if (!value) {
+        return Promise.resolve({
+          tag: "twitter:image",
+          title: "Thumbnail URL",
+          level: "error",
+          icon: "❌",
+          message: "De waarde voor twitter:image ontbreekt.",
+          suggestion: "Vul hier de volledige URL in van je thumbnail-afbeelding (minimaal 800 × 800 pixels)."
+        });
+      }
+      const trimmed = value.trim();
+      if (!isAbsoluteUrl(trimmed)) {
+        return Promise.resolve({
+          tag: "twitter:image",
+          title: "Thumbnail URL",
+          level: "error",
+          icon: "❌",
+          message: "De URL van de thumbnail is niet absoluut. Een relatief pad zoals \"img/thumbnail.jpg\" is volgens de opdracht niet toegestaan.",
+          current: trimmed,
+          suggestion: "Gebruik de volledige URL, bijvoorbeeld: https://…/img/thumbnail-800x800.jpg."
+        });
+      }
+
+      return new Promise(resolve => {
+        const img = new Image();
+        img.onload = () => {
+          const w = img.naturalWidth;
+          const h = img.naturalHeight;
+          if (w >= 800 && h >= 800) {
+            resolve({
+              tag: "twitter:image",
+              title: "Thumbnail URL",
+              level: "ok",
+              icon: "✅",
+              message: `Thumbnail bestaat en is groot genoeg (${w} × ${h} pixels).`,
+              current: trimmed
+            });
+          } else {
+            resolve({
+              tag: "twitter:image",
+              title: "Thumbnail URL",
+              level: "warning",
+              icon: "⚠️",
+              message: `Thumbnail bestaat, maar is kleiner dan 800 × 800 pixels (${w} × ${h}).`,
+              current: trimmed,
+              suggestion: "Maak een uitsnede of nieuwe afbeelding van minimaal 800 × 800 pixels en gebruik daarvan de URL."
+            });
+          }
+        };
+        img.onerror = () => {
+          resolve({
+            tag: "twitter:image",
+            title: "Thumbnail URL",
+            level: "error",
+            icon: "❌",
+            message: "De thumbnail-URL lijkt niet te werken (afbeelding kan niet geladen worden).",
+            current: trimmed,
+            suggestion: "Controleer het pad en of het bestand echt in je repo staat. Probeer de URL eerst even in een nieuw tabblad."
+          });
+        };
+        img.src = trimmed;
+      });
+    }
+
+    function humanFileSize(bytes) {
+      if (!Number.isFinite(bytes) || bytes < 0) return null;
+      const kb = bytes / 1024;
+      const rounded = Math.round(kb);
+      return `${rounded} KB`;
+    }
+
+    async function addImageSizes(images) {
+      const enriched = [];
+      for (const img of images) {
+        if (!img.url) {
+          enriched.push({ ...img, sizeBytes: null });
+          continue;
+        }
+        try {
+          const res = await fetch(img.url, { method: "HEAD" });
+          if (res.ok) {
+            const lenStr = res.headers.get("content-length");
+            const len = lenStr ? parseInt(lenStr, 10) : NaN;
+            enriched.push({ ...img, sizeBytes: Number.isFinite(len) ? len : null });
+          } else {
+            enriched.push({ ...img, sizeBytes: null });
+          }
+        } catch {
+          enriched.push({ ...img, sizeBytes: null });
+        }
+      }
+      return enriched;
+    }
+
+    function dedupeImages(images) {
+      const map = new Map();
+      for (const img of images) {
+        const key = img.url || `__src__${img.src || ""}`;
+        if (!map.has(key)) {
+          map.set(key, img);
+        }
+      }
+      return Array.from(map.values());
+    }
+
+    function computeStructureStats(doc, baseUrl) {
+      const tagCounts = {};
+      const classCounts = {};
+      const images = [];
+
+      const allElements = Array.from(doc.querySelectorAll("*"));
+      allElements.forEach(el => {
+        const tag = el.tagName.toLowerCase();
+        tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+
+        if (el.className && typeof el.className === "string") {
+          el.className.split(/\s+/).filter(Boolean).forEach(cls => {
+            classCounts[cls] = (classCounts[cls] || 0) + 1;
+          });
+        }
+      });
+
+      const imgEls = Array.from(doc.querySelectorAll("img"));
+      imgEls.forEach(img => {
+        const src = img.getAttribute("src") || "";
+        let absUrl = null;
+        try {
+          if (src) {
+            absUrl = new URL(src, baseUrl).href;
+          }
+        } catch {
+          absUrl = null;
+        }
+        images.push({ src, url: absUrl });
+      });
+
+      return {
+        totalElements: allElements.length,
+        tagCounts,
+        classCounts,
+        images
+      };
+    }
+
+    function collectStylesheets(doc, baseUrl) {
+      const links = Array.from(doc.querySelectorAll('link[rel="stylesheet"]'));
+      const result = [];
+      for (const link of links) {
+        const href = link.getAttribute("href");
+        if (!href) continue;
+        let abs;
+        try {
+          abs = new URL(href, baseUrl).href;
+        } catch {
+          continue;
+        }
+        const lower = abs.toLowerCase();
+        // Skip known reset/normalize stylesheets
+        if (/(?:reset|normalize|reboot|base)\.css($|\?)/.test(lower)) continue;
+        result.push(abs);
+      }
+      return Array.from(new Set(result));
+    }
+
+    function cleanCssSelector(selector) {
+      if (!selector) return selector;
+      // Remove block comments and normalize whitespace
+      return selector
+        .replace(/\/\*[\s\S]*?\*\//g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function findBigHeightsInCss(cssText, sourceUrl) {
+      const resultsMap = new Map();
+      const re = /height\s*:\s*([0-9.]+)\s*(px|vh)/gi;
+      let match;
+      while ((match = re.exec(cssText)) !== null) {
+        const valueStr = match[1];
+        const value = Number.parseFloat(valueStr);
+        if (!Number.isFinite(value)) continue;
+
+        const unit = match[2].toLowerCase();
+        const isBigPx = unit === "px" && value > 300;
+        const isBigVh = unit === "vh" && value > 30;
+        if (!isBigPx && !isBigVh) continue;
+
+        const index = match.index;
+
+        const before = cssText.slice(0, index);
+        const line = (before.match(/\n/g) || []).length + 1;
+
+        const bracePos = cssText.lastIndexOf("{", index);
+        if (bracePos === -1) continue;
+        const prevClose = cssText.lastIndexOf("}", bracePos);
+        const selectorStart = prevClose === -1 ? 0 : prevClose + 1;
+        let selector = cssText.slice(selectorStart, bracePos).trim();
+        selector = cleanCssSelector(selector);
+        if (!selector) selector = "(onbekende selector)";
+
+        const key = sourceUrl + "|" + selector;
+        const existing = resultsMap.get(key);
+        if (!existing || value > existing.value) {
+          resultsMap.set(key, {
+            selector,
+            value,
+            unit,
+            sourceUrl,
+            line
+          });
+        }
+      }
+      return Array.from(resultsMap.values());
+    }
+
+    function findBackgroundImages(cssText, sourceUrl) {
+      const results = [];
+      const re = /(background(?:-image)?)\s*:[^;]*url\((['"]?)(.*?)\2\)/gi;
+      let match;
+      while ((match = re.exec(cssText)) !== null) {
+        let rawUrl = match[3].trim();
+        if (!rawUrl || rawUrl.startsWith("data:")) continue;
+        try {
+          const abs = new URL(rawUrl, sourceUrl).href;
+          const path = new URL(abs).pathname.toLowerCase();
+          if (!/\.(png|jpe?g|gif|webp|svg)$/.test(path)) continue;
+          results.push({ src: rawUrl, url: abs });
+        } catch {
+          // skip invalid
+        }
+      }
+      return results;
+    }
+
+    function findNegativeMarginsAndPaddings(cssText, sourceUrl) {
+      const results = [];
+      const re = /(margin(?:-(?:top|right|bottom|left))?|padding(?:-(?:top|right|bottom|left))?)\s*:\s*([^;]*-\s*[0-9.]+[^;]*)/gi;
+      let match;
+      while ((match = re.exec(cssText)) !== null) {
+        const prop = match[1];
+        const valueText = match[2].trim();
+
+        const index = match.index;
+        const before = cssText.slice(0, index);
+        const line = (before.match(/\n/g) || []).length + 1;
+
+        const bracePos = cssText.lastIndexOf("{", index);
+        if (bracePos === -1) continue;
+        const prevClose = cssText.lastIndexOf("}", bracePos);
+        const selectorStart = prevClose === -1 ? 0 : prevClose + 1;
+        let selector = cssText.slice(selectorStart, bracePos).trim();
+        selector = cleanCssSelector(selector);
+        if (!selector) selector = "(onbekende selector)";
+
+        let magnitude = 0;
+        const numMatch = valueText.match(/-?\s*([0-9]+(?:\.[0-9]+)?)/);
+        if (numMatch) {
+          const numStr = numMatch[1].replace(/\s+/g, "");
+          const numVal = parseFloat(numStr);
+          if (Number.isFinite(numVal)) magnitude = Math.abs(numVal);
+        }
+
+        results.push({
+          property: prop,
+          valueText,
+          selector,
+          sourceUrl,
+          line,
+          magnitude
+        });
+      }
+      return results;
+    }
+
+    function computeCssUsage(cssText, sourceUrl) {
+      const usage = {
+        fileUrl: sourceUrl,
+        positionTotal: { count: 0, line: null },
+        positionValues: {
+          absolute: { count: 0, line: null },
+          relative: { count: 0, line: null },
+          fixed: { count: 0, line: null },
+          sticky: { count: 0, line: null }
+        },
+        displayTotal: { count: 0, line: null },
+        displayValues: {
+          block: { count: 0, line: null },
+          "inline-block": { count: 0, line: null },
+          flex: { count: 0, line: null },
+          grid: { count: 0, line: null }
+        },
+        floatTotal: { count: 0, line: null }
+      };
+
+      const addHit = (target, line) => {
+        target.count++;
+        if (target.line == null) target.line = line;
+      };
+
+      let re = /position\s*:\s*([a-z-]+)/gi;
+      let match;
+      while ((match = re.exec(cssText)) !== null) {
+        const before = cssText.slice(0, match.index);
+        const line = (before.match(/\n/g) || []).length + 1;
+        const value = match[1].toLowerCase();
+        addHit(usage.positionTotal, line);
+        if (usage.positionValues[value]) {
+          addHit(usage.positionValues[value], line);
+        }
+      }
+
+      re = /display\s*:\s*([a-z-]+)/gi;
+      while ((match = re.exec(cssText)) !== null) {
+        const before = cssText.slice(0, match.index);
+        const line = (before.match(/\n/g) || []).length + 1;
+        const value = match[1].toLowerCase();
+        addHit(usage.displayTotal, line);
+        if (usage.displayValues[value]) {
+          addHit(usage.displayValues[value], line);
+        }
+      }
+
+      re = /float\s*:\s*([a-z-]+)/gi;
+      while ((match = re.exec(cssText)) !== null) {
+        const before = cssText.slice(0, match.index);
+        const line = (before.match(/\n/g) || []).length + 1;
+        addHit(usage.floatTotal, line);
+      }
+
+      return usage;
+    }
+
+    async function analyzeCss(doc, baseUrl) {
+      const urls = collectStylesheets(doc, baseUrl);
+      const bigHeights = [];
+      const bgImages = [];
+      const negativeMargins = [];
+      const candidates = [];
+      let usage = null;
+      let primaryCssUrl = null;
+
+      for (const url of urls) {
+        try {
+          const res = await fetch(url, { method: "GET" });
+          if (!res.ok) continue;
+          const cssText = await res.text();
+
+          // Gather global analyses (independent of primary selection)
+          bigHeights.push(...findBigHeightsInCss(cssText, url));
+          bgImages.push(...findBackgroundImages(cssText, url));
+          negativeMargins.push(...findNegativeMarginsAndPaddings(cssText, url));
+
+          // Scoring heuristic for picking the "main" stylesheet
+          let score = 0;
+          const fileName = (() => { try { return getFileNameFromPath(new URL(url).pathname); } catch { return url; } })().toLowerCase();
+          if (/\b(style|styles|main|site|layout|screen|global)\.css$/.test(fileName)) score += 60;
+          if (/\b(app|index)\.css$/.test(fileName)) score += 40;
+          if (/\.css$/.test(fileName)) score += 10;
+          // Add size contribution (longer file likely main)
+          score += Math.min(50, Math.floor(cssText.length / 2000));
+
+          candidates.push({ url, cssText, score });
+        } catch {
+          // negeren bij fetch fouten
+        }
+      }
+
+      // Pick highest scored candidate
+      if (candidates.length > 0) {
+        candidates.sort((a, b) => b.score - a.score);
+        primaryCssUrl = candidates[0].url;
+        usage = computeCssUsage(candidates[0].cssText, candidates[0].url);
+      }
+
+      return { cssFiles: urls, bigHeights, bgImages, usage, negativeMargins, primaryCssUrl };
+    }
+
+    function getGithubBlobUrlFromCss(sourceUrl) {
+      try {
+        const u = new URL(sourceUrl);
+        const hostParts = u.hostname.split(".");
+        const org = hostParts[0] || "github";
+        const path = u.pathname.replace(/^\/+/, "");
+        const firstSlash = path.indexOf("/");
+        if (firstSlash === -1) return null;
+        const repo = path.substring(0, firstSlash);
+        const filePath = path.substring(firstSlash + 1);
+        return `https://github.com/${org}/${repo}/blob/main/${filePath}`;
+      } catch {
+        return null;
+      }
+    }
+
+    async function analyzeHomepage(homepageUrl) {
+      try {
+        const response = await fetch(homepageUrl, {
+          method: "GET",
+          mode: "cors"
+        });
+
+        if (!response.ok) {
+          return {
+            ok: false,
+            error: `Homepage kon niet worden opgehaald (HTTP-status ${response.status}).`
+          };
+        }
+
+        const html = await response.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+
+        const pageTitle = doc.querySelector("title")?.textContent || "";
+        const pageSetupCheck = validatePageSetupByTitle(pageTitle);
+
+        if (pageSetupCheck.level === "error" && pageSetupCheck.tag === "page-setup") {
+          return { ok: true, checks: [pageSetupCheck], structure: null, cssAnalysis: null, articleStructures: [] };
+        }
+
+        const card = getMetaContent(doc, "twitter:card");
+        const site = getMetaContent(doc, "twitter:site");
+        const creator = getMetaContent(doc, "twitter:creator");
+        const title = getMetaContent(doc, "twitter:title");
+        const articleUrl = getMetaContent(doc, "twitter:article:url");
+        const category = getMetaContent(doc, "twitter:category");
+        const image = getMetaContent(doc, "twitter:image");
+
+        const twitterCardCheck = validateTwitterCard(card);
+        const creatorCheck = validateCreator(creator);
+        const titleCheck = validateTitle(title);
+        const categoryCheck = validateCategory(category);
+
+        const [siteCheck, articleCheck, imageCheck] = await Promise.all([
+          validateSiteAsync(site, homepageUrl),
+          validateArticleUrl(articleUrl, homepageUrl, site),
+          validateImage(image)
+        ]);
+
+        const allChecks = [
+          twitterCardCheck,
+          siteCheck,
+          creatorCheck,
+          titleCheck,
+          categoryCheck,
+          articleCheck,
+          imageCheck
+        ];
+
+        const homeURL = new URL(homepageUrl);
+        const homeDirUrl = new URL(".", homeURL);
+        const anchors = Array.from(doc.querySelectorAll("a[href]"));
+        const articleUrlSet = new Set();
+
+        anchors.forEach(a => {
+          const href = (a.getAttribute("href") || "").trim();
+          if (!href) return;
+          if (href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("tel:")) return;
+          let resolved;
+          try {
+            resolved = new URL(href, homepageUrl);
+          } catch {
+            return;
+          }
+          // Only consider same-domain .html pages; allow any path (not just same directory)
+          if (resolved.origin !== homeURL.origin) return;
+          const p = resolved.pathname.toLowerCase();
+          if (!p.endsWith(".html")) return;
+          // Skip any index.html (students often link to homepage explicitly)
+          if (p.endsWith("/index.html") || p === "/index.html") return;
+          // Exclude homepage itself (even if linked with variations)
+          if (normalizeArticle(resolved.href) === normalizeHomepage(homepageUrl)) return;
+
+          articleUrlSet.add(resolved.href);
+        });
+
+        const articleStructures = [];
+        for (const artUrl of articleUrlSet) {
+          try {
+            const res = await fetch(artUrl, { method: "GET" });
+            if (!res.ok) continue;
+            const artHtml = await res.text();
+            const artDoc = parser.parseFromString(artHtml, "text/html");
+            const artStruct = computeStructureStats(artDoc, artUrl);
+            articleStructures.push({ url: artUrl, structure: artStruct });
+          } catch {
+            // negeren
+          }
+        }
+
+        let structure = computeStructureStats(doc, homepageUrl);
+        const cssAnalysis = await analyzeCss(doc, homepageUrl);
+
+        const allImagesRaw = [
+          ...structure.images,
+          ...(cssAnalysis?.bgImages || []),
+          ...articleStructures.flatMap(a => a.structure.images)
+        ];
+        const uniqueImages = dedupeImages(allImagesRaw);
+        structure.images = await addImageSizes(uniqueImages);
+
+        return { ok: true, checks: allChecks, structure, cssAnalysis, articleStructures };
+      } catch (err) {
+        console.error(err);
+        return {
+          ok: false,
+          error: "De pagina kon niet worden opgehaald. Controleer of de URL klopt en via GitHub Pages bereikbaar is."
+        };
+      }
+    }
+
+    function getCheckByTag(checks, tag) {
+      return checks.find(c => c.tag === tag);
+    }
+
+    function updatePreview(checks, summaryLevel) {
+      const section = document.getElementById("preview-section");
+      if (!section) return;
+
+      if (summaryLevel !== "ok") {
+        section.style.display = "none";
+        return;
+      }
+
+      const titleCheck = getCheckByTag(checks, "twitter:title");
+      const imageCheck = getCheckByTag(checks, "twitter:image");
+      const categoryCheck = getCheckByTag(checks, "twitter:category");
+      const articleCheck = getCheckByTag(checks, "twitter:article:url");
+      const creatorCheck = getCheckByTag(checks, "twitter:creator");
+
+      const title = (titleCheck && titleCheck.current) || "Voorbeeld titel van je artikel";
+      const imageUrl = (imageCheck && imageCheck.current) || "";
+      const category = (categoryCheck && categoryCheck.current) || "";
+      const articleUrl = (articleCheck && articleCheck.current) || "";
+      const creator = (creatorCheck && creatorCheck.current) || "";
+
+      const titleEl = document.getElementById("preview-title");
+      const metaEl = document.getElementById("preview-meta");
+      const urlEl = document.getElementById("preview-url-text");
+      const imgEl = document.getElementById("preview-image");
+      const placeholderEl = document.getElementById("preview-image-placeholder");
+
+      if (titleEl) titleEl.textContent = title;
+
+      const metaParts = [];
+      if (category) metaParts.push(category);
+      if (creator) metaParts.push(creator);
+      metaEl.textContent = metaParts.join(" • ");
+
+      urlEl.textContent = articleUrl || "https://example.com/artikel.html";
+
+      if (imageUrl) {
+        imgEl.src = imageUrl;
+        imgEl.style.display = "block";
+        placeholderEl.style.display = "none";
+      } else {
+        imgEl.src = "";
+        imgEl.style.display = "none";
+        placeholderEl.style.display = "block";
+      }
+
+      section.style.display = "block";
+    }
+
+    function getFileNameFromPath(path) {
+      if (!path) return "(geen bestandsnaam)";
+      const qIndex = path.indexOf("?");
+      if (qIndex !== -1) path = path.slice(0, qIndex);
+      const hashIndex = path.indexOf("#");
+      if (hashIndex !== -1) path = path.slice(0, hashIndex);
+      const parts = path.split("/");
+      for (let i = parts.length - 1; i >= 0; i--) {
+        if (parts[i]) return parts[i];
+      }
+      return "(geen bestandsnaam)";
+    }
+
+    function getGithubBlobUrlForIndex(homepageUrl) {
+      try {
+        const u = new URL(homepageUrl);
+        const user = u.hostname.split('.')[0];
+        let path = u.pathname.replace(/^\/+/,'').replace(/\/index\.html$/i,'');
+        // repo segment is first part of path for project pages
+        let repo = path.split('/')[0];
+        if (!repo) {
+          // user/organization site root; repo is user.github.io
+          repo = user + '.github.io';
+        }
+        return `https://github.com/${user}/${repo}/blob/main/index.html`;
+      } catch { return null; }
+    }
+
+    function getGithubBlobUrlForPage(pageUrl) {
+      try {
+        const u = new URL(pageUrl);
+        const user = u.hostname.split('.') [0];
+        const path = u.pathname.replace(/^\/+/, '');
+        const segments = path.split('/').filter(Boolean);
+        let repo = segments[0] || (user + '.github.io');
+        const filePath = segments.length > 1 ? segments.slice(1).join('/') : (segments[0] ? '' : path);
+        return `https://github.com/${user}/${repo}/blob/main/${filePath || 'index.html'}`;
+      } catch { return null; }
+    }
+
+    function updateStructure(structure, cssAnalysis, articleStructures, homepageUrl) {
+      const section = document.getElementById("structure-section");
+      if (!section) return;
+
+      if (!structure) {
+        section.style.display = "none";
+        return;
+      }
+
+      articleStructures = articleStructures || [];
+
+      const { tagCounts, classCounts, images, totalElements } = structure;
+
+      const tagsTableBody = document.querySelector("#tags-table tbody");
+      const tagsTotalHeader = document.getElementById("tags-total-header");
+      const classesTotalHeader = document.getElementById("classes-total-header");
+      const classesTableBody = document.querySelector("#classes-table tbody");
+
+      const articleCardTitle = document.getElementById("article-card-title");
+      const articleTagsTableBody = document.querySelector("#article-tags-table tbody");
+      const articleTagsTotalHeader = document.getElementById("article-tags-total-header");
+      const articleClassesTableBody = document.querySelector("#article-classes-table tbody");
+      const articleClassesTotalHeader = document.getElementById("article-classes-total-header");
+
+      const cssHeightsHeader = document.getElementById("css-heights-header");
+      const cssHeightsTableBody = document.querySelector("#css-heights-table tbody");
+      const cssUsageTableBody = document.querySelector("#css-usage-table tbody");
+      const cssUsageNote = document.getElementById("css-usage-note");
+      const cssCardTitle = document.getElementById("css-card-title");
+
+      const cssNegativeHeader = document.getElementById("css-negative-header");
+      const cssNegativeTableBody = document.querySelector("#css-negative-table tbody");
+
+      const imagesTableBody = document.getElementById("images-table-body");
+      const imagesTotalHeader = document.getElementById("images-total-header");
+      const imagesNote = document.getElementById("images-note");
+      const imageCardTitle = document.getElementById("image-card-title");
+      const homepageCardTitle = document.getElementById("homepage-card-title");
+      // Update homepage header hyperlink
+      if (homepageCardTitle) {
+        homepageCardTitle.innerHTML = '';
+        const blobUrl = homepageUrl ? getGithubBlobUrlForIndex(homepageUrl) : null;
+        if (blobUrl) {
+          const a = document.createElement('a');
+          a.href = blobUrl;
+          a.target = '_blank';
+          a.rel = 'noopener noreferrer';
+          a.textContent = 'index.html';
+          homepageCardTitle.appendChild(a);
+        } else {
+          homepageCardTitle.textContent = 'index.html';
+        }
+      }
+
+      tagsTableBody.innerHTML = "";
+      classesTableBody.innerHTML = "";
+      articleTagsTableBody.innerHTML = "";
+      articleClassesTableBody.innerHTML = "";
+      imagesTableBody.innerHTML = "";
+      cssHeightsTableBody.innerHTML = "";
+      cssNegativeTableBody.innerHTML = "";
+      cssUsageTableBody.innerHTML = "";
+      cssUsageNote.textContent = "";
+      imagesNote.textContent = "";
+      if (tagsTotalHeader) tagsTotalHeader.innerHTML = "";
+      if (classesTotalHeader) classesTotalHeader.innerHTML = "";
+      if (articleTagsTotalHeader) articleTagsTotalHeader.innerHTML = "";
+      if (articleClassesTotalHeader) articleClassesTotalHeader.innerHTML = "";
+      if (cssHeightsHeader) cssHeightsHeader.innerHTML = "";
+      if (cssNegativeHeader) cssNegativeHeader.innerHTML = "";
+      if (imagesTotalHeader) imagesTotalHeader.innerHTML = "";
+      // Ensure images column title shows plain text "image URL" without underline
+      if (imageCardTitle) {
+        imageCardTitle.textContent = "image URL";
+        imageCardTitle.style.textDecoration = "none";
+      }
+
+      if (cssCardTitle) {
+        // Clear any previous content
+        cssCardTitle.innerHTML = "";
+        if (cssAnalysis && cssAnalysis.primaryCssUrl) {
+          const blobUrl = getGithubBlobUrlFromCss(cssAnalysis.primaryCssUrl);
+          let label = "";
+          try {
+            const u = new URL(cssAnalysis.primaryCssUrl);
+            label = getFileNameFromPath(u.pathname);
+          } catch {
+            label = cssAnalysis.primaryCssUrl;
+          }
+          if (blobUrl) {
+            const a = document.createElement("a");
+            a.href = `${blobUrl}`;
+            a.target = "_blank";
+            a.rel = "noopener noreferrer";
+            a.textContent = label;
+            cssCardTitle.appendChild(a);
+          } else {
+            cssCardTitle.textContent = label;
+          }
+        } else {
+          cssCardTitle.textContent = "geen stylesheet";
+        }
+      }
+
+      if (cssAnalysis && cssAnalysis.usage) {
+        const u = cssAnalysis.usage;
+        const blobUrl = getGithubBlobUrlFromCss(u.fileUrl);
+
+        const addRow = (label, entry, indent = false) => {
+          const tr = document.createElement("tr");
+          const tdProp = document.createElement("td");
+          const tdUsage = document.createElement("td");
+          if (indent) tdProp.classList.add("indent");
+          tdProp.textContent = label;
+          if (entry.count > 0 && blobUrl && entry.line != null) {
+            const a = document.createElement("a");
+            a.href = `${blobUrl}#L${entry.line}`;
+            a.target = "_blank";
+            a.rel = "noopener noreferrer";
+            a.textContent = `${entry.count}`;
+            tdUsage.appendChild(a);
+          } else {
+            tdUsage.textContent = String(entry.count);
+          }
+          // Orange warning for heavy absolute positioning usage
+          if (label === "absolute" && entry.count > 5) {
+            tr.classList.add("semantic-warning-soft", "has-tooltip");
+            tr.dataset.tooltip = "Meer dan 5× position: absolute. Gebruik absolute zo weinig mogelijk; het belemmert vaak responsive design en flexibele layout.";
+          }
+          tr.appendChild(tdProp);
+          tr.appendChild(tdUsage);
+          cssUsageTableBody.appendChild(tr);
+        };
+
+        addRow("position", u.positionTotal, false);
+        addRow("absolute", u.positionValues.absolute, true);
+        addRow("relative", u.positionValues.relative, true);
+        addRow("fixed", u.positionValues.fixed, true);
+        addRow("sticky", u.positionValues.sticky, true);
+
+        const sep1 = document.createElement("tr");
+        sep1.innerHTML = `<td colspan="2" style="height:0.25rem;"></td>`;
+        cssUsageTableBody.appendChild(sep1);
+
+        addRow("display", u.displayTotal, false);
+        addRow("block", u.displayValues.block, true);
+        addRow("inline-block", u.displayValues["inline-block"], true);
+        addRow("flex", u.displayValues.flex, true);
+        addRow("grid", u.displayValues.grid, true);
+
+        const sep2 = document.createElement("tr");
+        sep2.innerHTML = `<td colspan="2" style="height:0.25rem;"></td>`;
+        cssUsageTableBody.appendChild(sep2);
+
+        addRow("float", u.floatTotal, false);
+
+        cssUsageNote.textContent = "Analyse op basis van gedetecteerde hoofdstylesheet (exclusief reset/normalize).";
+      } else {
+        cssUsageNote.textContent = "Geen style stylesheet gevonden (anders dan reset.css).";
+      }
+
+      const heightsCount = cssAnalysis && cssAnalysis.bigHeights ? cssAnalysis.bigHeights.length : 0;
+      if (cssHeightsHeader) {
+        cssHeightsHeader.innerHTML = `<span>height &gt; 300px of 30vh</span><span>${heightsCount}</span>`;
+        cssHeightsHeader.classList.remove("semantic-warning-soft", "semantic-warning", "has-tooltip");
+        cssHeightsHeader.removeAttribute("data-tooltip");
+
+        if (heightsCount > 5) {
+          cssHeightsHeader.classList.add("semantic-warning", "has-tooltip");
+          cssHeightsHeader.dataset.tooltip = "Meer dan 5 hoge elementen gevonden. Vermijd hardgecodeerde heights; laat elementen meegroeien met content om te voorkomen dat tekst wordt afgesneden of een scrollbar verschijnt.";
+        } else if (heightsCount >= 3) {
+          cssHeightsHeader.classList.add("semantic-warning-soft", "has-tooltip");
+          cssHeightsHeader.dataset.tooltip = "Meerdere (3-5) hoge elementen gevonden. Vermijd hardgecodeerde heights; laat elementen meegroeien met content om te voorkomen dat tekst wordt afgesneden of een scrollbar verschijnt.";
+        }
+      }
+      if (heightsCount > 0) {
+        const sortedHeights = [...cssAnalysis.bigHeights].sort((a, b) => b.value - a.value);
+
+        sortedHeights.forEach(item => {
+          const tr = document.createElement("tr");
+
+          const tdVal = document.createElement("td");
+          const code = document.createElement("code");
+          code.textContent = `${item.value}${item.unit}`;
+          tdVal.appendChild(code);
+
+          const tdSel = document.createElement("td");
+          
+          const lineDiv = document.createElement("div");
+          lineDiv.className = "css-height-line";
+
+          const blobUrl = getGithubBlobUrlFromCss(item.sourceUrl);
+          if (blobUrl) {
+            const a = document.createElement("a");
+            a.href = `${blobUrl}#L${item.line}`;
+            a.target = "_blank";
+            a.rel = "noopener noreferrer";
+            a.textContent = item.selector;
+            lineDiv.appendChild(a);
+          } else {
+            lineDiv.textContent = `line ${item.line}`;
+          }
+
+          
+          tdSel.appendChild(lineDiv);
+
+          tr.appendChild(tdVal);
+          tr.appendChild(tdSel);
+          cssHeightsTableBody.appendChild(tr);
+        });
+      } else {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 2;
+        td.className = "css-height-line";
+        td.textContent = "Geen selectors gevonden met height groter dan 300px of 30vh.";
+        tr.appendChild(td);
+        cssHeightsTableBody.appendChild(tr);
+      }
+
+      const negativeCount = cssAnalysis && cssAnalysis.negativeMargins ? cssAnalysis.negativeMargins.length : 0;
+      if (cssNegativeHeader) {
+        cssNegativeHeader.innerHTML = `<span>negative margins / paddings</span><span>${negativeCount}</span>`;
+      }
+      if (negativeCount > 0) {
+        const sortedNeg = [...cssAnalysis.negativeMargins].sort((a, b) => b.magnitude - a.magnitude);
+
+        sortedNeg.forEach(item => {
+          const tr = document.createElement("tr");
+
+          const tdVal = document.createElement("td");
+          const code = document.createElement("code");
+          code.textContent = `${item.property}: ${item.valueText}`;
+          tdVal.appendChild(code);
+
+          const tdSel = document.createElement("td");
+
+          const lineDiv = document.createElement("div");
+          lineDiv.className = "css-height-line";
+
+          const blobUrl = getGithubBlobUrlFromCss(item.sourceUrl);
+          if (blobUrl) {
+            const a = document.createElement("a");
+            a.href = `${blobUrl}#L${item.line}`;
+            a.target = "_blank";
+            a.rel = "noopener noreferrer";
+            a.textContent = item.selector;
+            lineDiv.appendChild(a);
+          } else {
+            lineDiv.textContent = `line ${item.line}`;
+          }
+
+          tdSel.appendChild(lineDiv);
+
+          tr.appendChild(tdVal);
+          tr.appendChild(tdSel);
+          cssNegativeTableBody.appendChild(tr);
+        });
+      } else {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 2;
+        td.className = "css-height-line";
+        td.textContent = "Geen negatieve margin- of padding-waarden gevonden.";
+        tr.appendChild(td);
+        cssNegativeTableBody.appendChild(tr);
+      }
+
+      const interestingTags = [
+        "header", "main", "footer",
+        "div", "span",
+        "section", "article",
+        "a",
+        "h1", "h2", "h3", "h4", "h5", "h6",
+        "p",
+        "nav",
+        "ul", "li",
+        "img",
+        "br"
+      ];
+
+      const tagRows = new Map();
+      interestingTags.forEach(tag => {
+        const count = tagCounts[tag] || 0;
+        const tr = document.createElement("tr");
+        const tdTag = document.createElement("td");
+        const tdCount = document.createElement("td");
+        tdTag.textContent = `<${tag}>`;
+        tdCount.textContent = count;
+        if (tag === "nav" && count === 0) {
+          tr.classList.add("missing-nav", "semantic-warning", "has-tooltip");
+          tr.dataset.tooltip = "Geen <nav>-element gevonden. Navigatie is een basisonderdeel van vrijwel elke website; zonder <nav> ontbreekt semantische structuur en toegankelijkheid (screenreaders, toetsenbordnavigatie).";
+        }
+        if (tag === "h3" && count === 0) {
+          tr.classList.add("semantic-warning-soft", "has-tooltip");
+          tr.dataset.tooltip = "Geen <h3> gevonden. Tussenkoppen op niveau 3 zijn optioneel, maar nuttig voor subsecties onder <h2>.";
+        }
+        if (tag === "h2" && count === 0) {
+          tr.classList.add("semantic-warning", "has-tooltip");
+          tr.dataset.tooltip = "Geen <h2> gevonden. Gebruik tussenkoppen om structuur en scanbaarheid te verbeteren.";
+        }
+        if (tag === "header" && count === 0) {
+          tr.classList.add("semantic-warning", "has-tooltip");
+          tr.dataset.tooltip = "Geen <header> gevonden. Een semantische header helpt bij herkenbaarheid van de kopsectie en toegankelijkheid.";
+        }
+        if (tag === "main" && count === 0) {
+          tr.classList.add("semantic-warning", "has-tooltip");
+          tr.dataset.tooltip = "Geen <main> gevonden. Gebruik <main> om de hoofdinhoud van de pagina te markeren voor screenreaders.";
+        }
+        if (tag === "footer" && count === 0) {
+          tr.classList.add("semantic-warning", "has-tooltip");
+          tr.dataset.tooltip = "Geen <footer> gevonden. Een footer biedt semantische afsluiting en navigatie/credits voor de pagina.";
+        }
+        if (tag === "h1" && count === 0) {
+          tr.classList.add("semantic-warning", "has-tooltip");
+          tr.dataset.tooltip = "Geen <h1> gevonden. Elke pagina hoort één hoofdheading te hebben voor structuur, SEO en toegankelijkheid.";
+        }
+        if (tag === "p" && count === 0) {
+          tr.classList.add("semantic-warning", "has-tooltip");
+          tr.dataset.tooltip = "Geen <p>-elementen gevonden. Gebruik paragrafen voor lopende tekst; dit helpt leesbaarheid en semantiek.";
+        }
+        if (tag === "br" && count > 0) {
+          tr.classList.add("semantic-warning", "has-tooltip");
+          tr.dataset.tooltip = "<br> is voor inhoudelijke regelafbreking. Gebruik het niet voor witruimte; dat hoort met CSS (bijv. margin).";
+        }
+        if (tag === "a" && count <= 3) {
+          tr.classList.add("semantic-warning", "has-tooltip");
+          tr.dataset.tooltip = "Weinig of geen links gevonden (≤3). Een typische website heeft meer interne/externe links voor navigatie en verwijzingen.";
+        }
+        tr.appendChild(tdTag);
+        tr.appendChild(tdCount);
+        tagsTableBody.appendChild(tr);
+        tagRows.set(tag, tr);
+      });
+
+      // Check for skipped heading levels
+      const headingLevels = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
+      for (let i = 1; i < headingLevels.length; i++) {
+        const currentLevel = headingLevels[i];
+        const previousLevel = headingLevels[i - 1];
+        const currentCount = tagCounts[currentLevel] || 0;
+        const previousCount = tagCounts[previousLevel] || 0;
+        
+        if (currentCount > 0 && previousCount === 0) {
+          const row = tagRows.get(currentLevel);
+          if (row) {
+            row.classList.add("semantic-warning", "has-tooltip");
+            row.dataset.tooltip = `Heading niveau overgeslagen: <${currentLevel}> wordt gebruikt, maar <${previousLevel}> ontbreekt. Dit breekt de heading hiërarchie en schaadt toegankelijkheid (screenreaders).`;
+          }
+        }
+      }
+
+      if (tagsTotalHeader) {
+        tagsTotalHeader.innerHTML = `<span>Total HTML elements</span><span>${totalElements}</span>`;
+      }
+
+      const sortedClasses = Object.entries(classCounts).sort((a, b) => b[1] - a[1]);
+      sortedClasses.forEach(([cls, count]) => {
+        const tr = document.createElement("tr");
+        const tdCls = document.createElement("td");
+        const tdCount = document.createElement("td");
+        tdCls.textContent = cls;
+        tdCount.textContent = count;
+        tr.appendChild(tdCls);
+        tr.appendChild(tdCount);
+        classesTableBody.appendChild(tr);
+      });
+      if (classesTotalHeader) {
+        classesTotalHeader.innerHTML = `<span>CSS classes used</span><span>${sortedClasses.length}</span>`;
+      }
+
+      if (articleStructures.length > 0) {
+        const first = articleStructures[0];
+        const aStruct = first.structure;
+
+        let fileName;
+        let blobUrl = null;
+        try {
+          const u = new URL(first.url);
+          fileName = getFileNameFromPath(u.pathname);
+          blobUrl = getGithubBlobUrlForPage(first.url);
+        } catch {
+          fileName = first.url;
+        }
+        if (articleCardTitle) {
+          articleCardTitle.innerHTML = '';
+          if (blobUrl) {
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            a.textContent = fileName;
+            articleCardTitle.appendChild(a);
+          } else {
+            articleCardTitle.textContent = fileName;
+          }
+        }
+
+        const articleTagRows = new Map();
+        interestingTags.forEach(tag => {
+          const count = aStruct.tagCounts[tag] || 0;
+          const tr = document.createElement("tr");
+          const tdTag = document.createElement("td");
+          const tdCount = document.createElement("td");
+          tdTag.textContent = `<${tag}>`;
+          tdCount.textContent = count;
+          if (tag === "nav" && count === 0) {
+            tr.classList.add("missing-nav", "semantic-warning", "has-tooltip");
+            tr.dataset.tooltip = "Geen <nav>-element gevonden. Navigatie is een basisonderdeel van vrijwel elke website; zonder <nav> ontbreekt semantische structuur en toegankelijkheid (screenreaders, toetsenbordnavigatie).";
+          }
+          if (tag === "h3" && count === 0) {
+            tr.classList.add("semantic-warning-soft", "has-tooltip");
+            tr.dataset.tooltip = "Geen <h3> gevonden. Tussenkoppen op niveau 3 zijn optioneel, maar nuttig voor subsecties onder <h2>.";
+          }
+          if (tag === "h2" && count === 0) {
+            tr.classList.add("semantic-warning", "has-tooltip");
+            tr.dataset.tooltip = "Geen <h2> gevonden. Gebruik tussenkoppen om structuur en scanbaarheid te verbeteren.";
+          }
+          if (tag === "header" && count === 0) {
+            tr.classList.add("semantic-warning", "has-tooltip");
+            tr.dataset.tooltip = "Geen <header> gevonden. Een semantische header helpt bij herkenbaarheid van de kopsectie en toegankelijkheid.";
+          }
+          if (tag === "main" && count === 0) {
+            tr.classList.add("semantic-warning", "has-tooltip");
+            tr.dataset.tooltip = "Geen <main> gevonden. Gebruik <main> om de hoofdinhoud van de pagina te markeren voor screenreaders.";
+          }
+          if (tag === "footer" && count === 0) {
+            tr.classList.add("semantic-warning", "has-tooltip");
+            tr.dataset.tooltip = "Geen <footer> gevonden. Een footer biedt semantische afsluiting en navigatie/credits voor de pagina.";
+          }
+          if (tag === "h1" && count === 0) {
+            tr.classList.add("semantic-warning", "has-tooltip");
+            tr.dataset.tooltip = "Geen <h1> gevonden. Elke pagina hoort één hoofdheading te hebben voor structuur, SEO en toegankelijkheid.";
+          }
+          if (tag === "p" && count === 0) {
+            tr.classList.add("semantic-warning", "has-tooltip");
+            tr.dataset.tooltip = "Geen <p>-elementen gevonden. Gebruik paragrafen voor lopende tekst; dit helpt leesbaarheid en semantiek.";
+          }
+          if (tag === "br" && count > 0) {
+            tr.classList.add("semantic-warning", "has-tooltip");
+            tr.dataset.tooltip = "<br> is voor inhoudelijke regelafbreking. Gebruik het niet voor witruimte; dat hoort met CSS (bijv. margin).";
+          }
+          if (tag === "a" && count <= 3) {
+            tr.classList.add("semantic-warning", "has-tooltip");
+            tr.dataset.tooltip = "Weinig of geen links gevonden (≤3). Een typische website heeft meer interne/externe links voor navigatie en verwijzingen.";
+          }
+          tr.appendChild(tdTag);
+          tr.appendChild(tdCount);
+          articleTagsTableBody.appendChild(tr);
+          articleTagRows.set(tag, tr);
+        });
+
+        // Check for skipped heading levels
+        const headingLevels = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
+        for (let i = 1; i < headingLevels.length; i++) {
+          const currentLevel = headingLevels[i];
+          const previousLevel = headingLevels[i - 1];
+          const currentCount = aStruct.tagCounts[currentLevel] || 0;
+          const previousCount = aStruct.tagCounts[previousLevel] || 0;
+          
+          if (currentCount > 0 && previousCount === 0) {
+            const row = articleTagRows.get(currentLevel);
+            if (row) {
+              row.classList.add("semantic-warning", "has-tooltip");
+              row.dataset.tooltip = `Heading niveau overgeslagen: <${currentLevel}> wordt gebruikt, maar <${previousLevel}> ontbreekt. Dit breekt de heading hiërarchie en schaadt toegankelijkheid (screenreaders).`;
+            }
+          }
+        }
+        if (articleTagsTotalHeader) {
+          articleTagsTotalHeader.innerHTML =
+            `<span>Total HTML elements</span><span>${aStruct.totalElements}</span>`;
+        }
+
+        const artClassEntries = Object.entries(aStruct.classCounts).sort((a, b) => b[1] - a[1]);
+        artClassEntries.forEach(([cls, count]) => {
+          const tr = document.createElement("tr");
+          const tdCls = document.createElement("td");
+          const tdCount = document.createElement("td");
+          tdCls.textContent = cls;
+          tdCount.textContent = count;
+          tr.appendChild(tdCls);
+          tr.appendChild(tdCount);
+          articleClassesTableBody.appendChild(tr);
+        });
+        if (articleClassesTotalHeader) {
+          articleClassesTotalHeader.innerHTML =
+            `<span>CSS classes used</span><span>${artClassEntries.length}</span>`;
+        }
+      } else {
+        if (articleCardTitle) articleCardTitle.textContent = "artikel.html";
+        if (articleTagsTotalHeader) {
+          articleTagsTotalHeader.innerHTML =
+            `<span>Total HTML elements</span><span>0</span>`;
+        }
+        if (articleClassesTotalHeader) {
+          articleClassesTotalHeader.innerHTML =
+            `<span>CSS classes used</span><span>0</span>`;
+        }
+      }
+
+      if (images.length > 0) {
+        let unknownSize = false;
+
+        const sortedImages = [...images].sort((a, b) => {
+          const aSize = a.sizeBytes;
+          const bSize = b.sizeBytes;
+          if (aSize == null && bSize == null) return 0;
+          if (aSize == null) return 1;
+          if (bSize == null) return -1;
+          return bSize - aSize;
+        });
+
+        sortedImages.slice(0, 40).forEach(img => {
+          const tr = document.createElement("tr");
+          const tdName = document.createElement("td");
+          tdName.className = "filename-cell";
+
+          let fileName = "";
+          let fullNameForTitle = "";
+          let targetUrl = img.url || "";
+
+          if (img.url) {
+            try {
+              const u = new URL(img.url);
+              fileName = getFileNameFromPath(u.pathname);
+              fullNameForTitle = u.pathname;
+            } catch {
+              fileName = getFileNameFromPath(img.src || "");
+              fullNameForTitle = img.src || "";
+            }
+          } else {
+            fileName = getFileNameFromPath(img.src || "");
+            fullNameForTitle = img.src || "";
+          }
+
+          const code = document.createElement("code");
+          code.textContent = fileName || "(geen bestandsnaam)";
+
+          if (targetUrl) {
+            const a = document.createElement("a");
+            a.href = targetUrl;
+            a.target = "_blank";
+            a.rel = "noopener noreferrer";
+            a.title = fullNameForTitle || fileName;
+            a.appendChild(code);
+            tdName.appendChild(a);
+          } else {
+            tdName.title = fullNameForTitle || fileName;
+            tdName.appendChild(code);
+          }
+
+          const tdSize = document.createElement("td");
+          const sizeStr = humanFileSize(img.sizeBytes);
+          if (sizeStr) {
+            tdSize.textContent = sizeStr;
+          } else {
+            tdSize.textContent = "—";
+            unknownSize = true;
+          }
+
+          tr.appendChild(tdName);
+          tr.appendChild(tdSize);
+          imagesTableBody.appendChild(tr);
+        });
+
+        const noteParts = [];
+
+        if (images.length > 40) {
+          noteParts.push(`Toont de 40 grootste afbeeldingen (totaal ${images.length}).`);
+        }
+
+        if (unknownSize) {
+          noteParts.push("Voor sommige afbeeldingen kon de bestandsgrootte niet worden bepaald.");
+        }
+
+        const totalBytes = images.reduce((sum, img) => {
+          return sum + (Number.isFinite(img.sizeBytes) ? img.sizeBytes : 0);
+        }, 0);
+
+        if (imagesTotalHeader) {
+          const totalStr = totalBytes > 0 ? humanFileSize(totalBytes) : "0 KB";
+          imagesTotalHeader.innerHTML = `<span>Total image size</span><span>${totalStr}</span>`;
+          
+          // Add warnings based on total image size
+          const totalMB = totalBytes / (1024 * 1024);
+          imagesTotalHeader.classList.remove("semantic-warning-soft", "semantic-warning", "has-tooltip");
+          imagesTotalHeader.removeAttribute("data-tooltip");
+          
+          if (totalMB > 10) {
+            imagesTotalHeader.classList.add("semantic-warning", "has-tooltip");
+            imagesTotalHeader.dataset.tooltip = `Totale beeldgrootte is ${totalMB.toFixed(1)} MB (>10 MB). Dit kan de paginaladingstijd aanzienlijk verlengen. Comprimeer afbeeldingen of gebruik webp-formaat.`;
+          } else if (totalMB >= 5) {
+            imagesTotalHeader.classList.add("semantic-warning-soft", "has-tooltip");
+            imagesTotalHeader.dataset.tooltip = `Totale beeldgrootte is ${totalMB.toFixed(1)} MB (5-10 MB). Controleer of afbeeldingen geoptimaliseerd zijn voor web; sla ze op in het juiste formaat (bv jpg of png) en voeg compressie toe bij het opslaan.`;
+          }
+        }
+
+        imagesNote.textContent = noteParts.join(" ");
+      } else {
+        if (imagesTotalHeader) {
+          imagesTotalHeader.innerHTML = `<span>Total image size</span><span>0 KB</span>`;
+        }
+        imagesNote.textContent = "Geen afbeeldingen gevonden op deze pagina.";
+      }
+
+      section.style.display = "block";
+    }
+
+    function renderResults(checks, structure, cssAnalysis, articleStructures) {
+      const resultsEl = document.getElementById("results");
+      const checksContainer = document.getElementById("checks");
+      const summaryEl = document.getElementById("summary");
+
+      checksContainer.innerHTML = "";
+
+      const summary = summarizeStatus(checks);
+      summaryEl.innerHTML = `
+        <span class="status-badge ${summary.level}">
+          ${summary.level === "ok" ? "Alles ok" :
+             summary.level === "mixed" ? "Opdracht bijna goed" :
+             "Fouten gevonden"}
+        </span>
+        <span>${summary.text}</span>
+      `;
+
+      checks.forEach(check => {
+        const card = document.createElement("article");
+        card.className = "check-card";
+
+        const iconSpan = document.createElement("div");
+        iconSpan.className = "check-icon";
+        iconSpan.textContent = check.icon || "ℹ️";
+
+        const contentDiv = document.createElement("div");
+        contentDiv.className = "check-content";
+
+        const titleEl = document.createElement("div");
+        titleEl.className = "check-title";
+        titleEl.textContent = check.title;
+
+        const tagEl = document.createElement("div");
+        tagEl.className = "check-tag";
+        tagEl.textContent = `<meta name="${check.tag}">`;
+
+        const msgEl = document.createElement("div");
+        msgEl.className = "check-message";
+        msgEl.innerHTML = check.message;
+
+        contentDiv.appendChild(titleEl);
+
+        if (check.tag !== "page-setup") {
+          contentDiv.appendChild(tagEl);
+        }
+
+        contentDiv.appendChild(msgEl);
+
+        if (check.current !== undefined) {
+          const currentEl = document.createElement("div");
+          currentEl.className = "current-values";
+          currentEl.innerHTML = `Huidige waarde: <code>${check.current === null ? "—" : check.current}</code>`;
+          contentDiv.appendChild(currentEl);
+        }
+
+        if (check.suggestion) {
+          const suggestionEl = document.createElement("div");
+          suggestionEl.className = "current-values";
+          suggestionEl.innerHTML = `<strong>Suggestie:</strong> ${check.suggestion}`;
+          contentDiv.appendChild(suggestionEl);
+        }
+
+        card.appendChild(iconSpan);
+        card.appendChild(contentDiv);
+        checksContainer.appendChild(card);
+      });
+
+      resultsEl.style.display = "block";
+
+      const summaryStatus = summarizeStatus(checks);
+      updatePreview(checks, summaryStatus.level);
+      // Pass submitted homepage URL so we can build repo link for index.html
+      updateStructure(structure, cssAnalysis, articleStructures, lastSubmittedHomepageUrl);
+    }
+
+    
+
+    const form = document.getElementById("check-form");
+    const loadingEl = document.getElementById("loading");
+
+    let lastSubmittedHomepageUrl = null;
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const urlInput = document.getElementById("url");
+      const submittedUrl = urlInput.value.trim();
+      if (!submittedUrl) return;
+      lastSubmittedHomepageUrl = submittedUrl;
+
+      loadingEl.style.display = "flex";
+      document.getElementById("results").style.display = "none";
+      document.getElementById("preview-section").style.display = "none";
+      document.getElementById("structure-section").style.display = "none";
+      const button = form.querySelector("button");
+      button.disabled = true;
+
+      const analysis = await analyzeHomepage(submittedUrl);
+
+      if (!analysis.ok) {
+        document.getElementById("results").style.display = "block";
+        document.getElementById("summary").innerHTML = `
+          <span class="status-badge error">Kon niet laden</span>
+          <span class="error-text">${analysis.error}</span>
+        `;
+        document.getElementById("checks").innerHTML = "";
+        document.getElementById("preview-section").style.display = "none";
+        document.getElementById("structure-section").style.display = "none";
+      } else {
+        renderResults(analysis.checks, analysis.structure, analysis.cssAnalysis, analysis.articleStructures || []);
+      }
+
+      loadingEl.style.display = "none";
+      button.disabled = false;
+    });
+
+    (function setDynamicPlaceholders() {
+      const basePrefix = getBaseHandlePrefix();
+      const homepageInput = document.getElementById("url");
+      if (homepageInput) {
+        homepageInput.placeholder = basePrefix + "jouwhandle/";
+      }
+    })();
+  </script>
+</body>
+</html>
