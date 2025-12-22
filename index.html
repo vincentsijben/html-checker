@@ -2074,6 +2074,13 @@
       const negativeCount = cssAnalysis && cssAnalysis.negativeMargins ? cssAnalysis.negativeMargins.length : 0;
       if (cssNegativeHeader) {
         cssNegativeHeader.innerHTML = `<span>negative margins / paddings</span><span>${negativeCount}</span>`;
+        cssNegativeHeader.classList.remove("semantic-warning", "has-tooltip");
+        cssNegativeHeader.removeAttribute("data-tooltip");
+        
+        if (negativeCount > 0) {
+          cssNegativeHeader.classList.add("semantic-warning", "has-tooltip");
+          cssNegativeHeader.dataset.tooltip = "Negatieve margins/paddings gevonden. Dit kan onverwachte overlap en positionering veroorzaken. Gebruik dit alleen zeer bewust en niet als trucje om elementen te verplaatsen.";
+        }
       }
       if (negativeCount > 0) {
         const sortedNeg = [...cssAnalysis.negativeMargins].sort((a, b) => b.magnitude - a.magnitude);
