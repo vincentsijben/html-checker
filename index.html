@@ -2615,6 +2615,11 @@
       if (!submittedUrl) return;
       lastSubmittedHomepageUrl = submittedUrl;
 
+      // Update the browser URL with the entered URL as a query parameter
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.set('url', submittedUrl);
+      window.history.pushState({}, '', newUrl);
+
       loadingEl.style.display = "flex";
       document.getElementById("results").style.display = "none";
       document.getElementById("preview-section").style.display = "none";
@@ -2646,6 +2651,20 @@
       const homepageInput = document.getElementById("url");
       if (homepageInput) {
         homepageInput.placeholder = basePrefix + "jouwhandle/";
+      }
+    })();
+
+    // Pre-populate URL input from query parameter on page load
+    (function loadUrlFromQueryParam() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlFromParam = urlParams.get('url');
+      if (urlFromParam) {
+        const urlInput = document.getElementById("url");
+        if (urlInput) {
+          urlInput.value = urlFromParam;
+          // Auto-submit the form to show results immediately
+          form.dispatchEvent(new Event('submit'));
+        }
       }
     })();
   </script>
