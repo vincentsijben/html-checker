@@ -618,6 +618,17 @@
       opacity: 1;
       transform: translateY(0);
     }
+
+    /* Orange border for image warnings (warnings, not errors) */
+    #images-table-body tr.has-tooltip::after {
+      border-color: #f59e0b;
+    }
+    #images-table-body tr.has-tooltip:hover {
+      cursor: help;
+    }
+    #images-table-body tr.has-tooltip:hover a {
+      cursor: help;
+    }
   </style>
 </head>
 <body>
@@ -2410,16 +2421,38 @@
           const code = document.createElement("code");
           code.textContent = fileName || "(geen bestandsnaam)";
 
+          // Check filename quality: spaces, uppercase, or numbers
+          const filenameWithoutExtRaw = fileName ? fileName.split('.').slice(0, -1).join('.') : "";
+          const filenameWithoutExt = filenameWithoutExtRaw.replace(/%20/gi, " ");
+          const hasSpaces = filenameWithoutExt.includes(' ');
+          const hasUppercase = /[A-Z]/.test(filenameWithoutExt);
+          const hasNumbers = /[0-9]/.test(filenameWithoutExt);
+          
+          const filenameIssues = [];
+          if (hasSpaces) filenameIssues.push("spaties");
+          if (hasUppercase) filenameIssues.push("hoofdletters");
+          if (hasNumbers) filenameIssues.push("nummers");
+
           if (targetUrl) {
             const a = document.createElement("a");
             a.href = targetUrl;
             a.target = "_blank";
             a.rel = "noopener noreferrer";
-            a.title = fullNameForTitle || fileName;
+            
+            // Style filename orange if it has issues
+            if (filenameIssues.length > 0) {
+              code.style.color = "#f59e0b";
+              code.style.fontWeight = "bold";
+            }
+            
             a.appendChild(code);
             tdName.appendChild(a);
           } else {
-            tdName.title = fullNameForTitle || fileName;
+            // Style filename orange if it has issues
+            if (filenameIssues.length > 0) {
+              code.style.color = "#f59e0b";
+              code.style.fontWeight = "bold";
+            }
             tdName.appendChild(code);
           }
 
@@ -2434,7 +2467,21 @@
 
           tr.appendChild(tdName);
           tr.appendChild(tdSize);
+          
+          // Add tooltip to the row if filename has issues
+          if (filenameIssues.length > 0) {
+            const adviceParts = [];
+            if (hasUppercase) adviceParts.push("Hoofdletters zijn foutgevoeliger; gebruik kleine letters.");
+            if (hasSpaces) adviceParts.push("Spaties worden %20 online en zijn niet handig voor SEO; gebruik streepjes (-).");
+            if (hasNumbers) adviceParts.push("Vermijd cijfers als het niet hoeft.");
+            adviceParts.push("Kies logische bestandsnamen die beschrijven wat er te zien is.");
+
+            tr.classList.add("has-tooltip");
+            tr.dataset.tooltip = `Bestandsnaam bevat ${filenameIssues.join(", ")}. ${adviceParts.join(" ")}`;
+          }
+          
           imagesTableBody.appendChild(tr);
+
         });
 
         const noteParts = [];
