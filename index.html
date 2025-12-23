@@ -2227,6 +2227,13 @@
       });
       if (classesTotalHeader) {
         classesTotalHeader.innerHTML = `<span>CSS classes used</span><span>${sortedClasses.length}</span>`;
+        classesTotalHeader.classList.remove("semantic-warning-soft", "has-tooltip");
+        classesTotalHeader.removeAttribute("data-tooltip");
+
+        if (sortedClasses.length > 30) {
+          classesTotalHeader.classList.add("semantic-warning-soft", "has-tooltip");
+          classesTotalHeader.dataset.tooltip = `Meer dan 30 CSS classes gevonden (${sortedClasses.length}). Dit kan duiden op te veel specifieke styling in plaats van herbruikbare componenten. Overweeg of sommige classes samengevoegd kunnen worden.`;
+        }
       }
 
       if (articleStructures.length > 0) {
@@ -2345,6 +2352,13 @@
         if (articleClassesTotalHeader) {
           articleClassesTotalHeader.innerHTML =
             `<span>CSS classes used</span><span>${artClassEntries.length}</span>`;
+          articleClassesTotalHeader.classList.remove("semantic-warning-soft", "has-tooltip");
+          articleClassesTotalHeader.removeAttribute("data-tooltip");
+
+          if (artClassEntries.length > 30) {
+            articleClassesTotalHeader.classList.add("semantic-warning-soft", "has-tooltip");
+            articleClassesTotalHeader.dataset.tooltip = `Meer dan 30 CSS classes gevonden (${artClassEntries.length}). Dit kan duiden op te veel specifieke styling in plaats van herbruikbare componenten. Overweeg of sommige classes samengevoegd kunnen worden.`;
+          }
         }
       } else {
         if (articleCardTitle) articleCardTitle.textContent = "artikel.html";
